@@ -3699,6 +3699,12 @@ class TransactionStrategy(AbstractStrategy):
                 "At least a command with a key is needed to identify a node"
             )
 
+        if self._transaction_connection:
+            # Keep the node the held connection belongs to, even if a refresh
+            # moved the slot: the server reports the move (MOVED), and the error
+            # path releases the connection to its own node before retargeting
+            return self._transaction_node, self._transaction_connection
+
         node: ClusterNode = self._pipe.cluster_client.nodes_manager.get_node_from_slot(
             list(self._pipeline_slots)[0], False
         )
